@@ -6,43 +6,22 @@ import vehiclesRouter from "./vehicle.route";
 
 const router = Router();
 
-// auth routes
-router.use(
-  "/auth",
-  AUthRoutes
-  /*
-        #swagger.tags = ['Auth']
-        #swagger.security = [] 
-    */
-);
-router.use(
-  "/user",
-  userRouter
-  /*
-      #swagger.tags = ['Users']
-      #swagger.security = [{
-              "bearerAuth": []
-      }] 
-  */
-);
- 
-router.use("/vehicles", vehiclesRouter
-   /*
-      #swagger.tags = ['Vehicles']
-      #swagger.security = [{
-              "bearerAuth": []
-      }] 
-  */
-);
+/**
+ * @swagger
+ * tags:
+ *   - name: Auth
+ *     description: Authentication related routes
+ *   - name: Users
+ *     description: User management endpoints
+ *   - name: Vehicles
+ *     description: Vehicle registration and lookup
+ *   - name: Parkings
+ *     description: Parking management
+ */
 
- 
-router.use("/parkings", parkingRouter
-   /*
-      #swagger.tags = ['Parkings']
-      #swagger.security = [{
-              "bearerAuth": []
-      }] 
-  */
-);
+router.use("/auth", AUthRoutes);
+router.use("/user", userRouter);
+router.use("/vehicles", vehiclesRouter);
+router.use("/parkings", parkingRouter);
 
 export default router;
