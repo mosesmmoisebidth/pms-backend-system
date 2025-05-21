@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+
+  @@map(name: "role")
+}
+
+enum SlotStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  RESERVED
+
+  @@map(name: "slot_status")
+}
+
+enum VehicleType {
+  CAR
+  BIKE
+  TRUCK
+  BUS
+
+  @@map(name: "vehicle_type")
+}
+
+enum VehicleStatus {
+  PARKING
+  OUTSIDE
+
+  @@map(name: "status")
+}
+
+enum ParkingStatus {
+  AVAILABLE
+  RESERVED
+  FULL
+
+  @@map(name: "parking_status")
+}
+
+model User {
+  id                            String    @id @default(uuid())
+  names                         String
+  email                         String    @unique
+  password                      String
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @default(now())
+  role                          Role      @default(CUSTOMER)
+  emailVerified                 Boolean   @default(false)
+  emailVerificationToken        String?
+  emailVerificationTokenExpires DateTime?
+  resetPasswordToken            String?
+  resetPasswordTokenExpires     DateTime?
+  vehicles                      Vehicle[]
+  tickets                       Ticket[]
+
+  @@map("users")
+}
+
+model Parking {
+  id             String        @id @default(uuid())
+  code           String        @unique
+  parking_name   String
+  spaces         Int
+  location       String
+  charging_fee   Int
+  parking_status ParkingStatus @default(AVAILABLE)
+  vehicles       Vehicle[]
+}
+
+model Vehicle {
+  id             String    @id @default(uuid())
+  plate_number   String    @unique
+  entry_date     DateTime  @default(now())
+  exit_date      DateTime?
+  charged_amount Int       @default(0)
+  parkingId      String
+  parking        Parking   @relation(fields: [parkingId], references: [id])
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+
+  tickets Ticket[] // 👈 Relation: One vehicle can have many tickets
+}
+
+model Ticket {
+  id               String   @id @default(uuid())
+  ticketNumber     String   @unique
+  bookingId        String // can be kept for traceability or removed
+  entryTime        DateTime
+  exitTime         DateTime
+  totalAmount      Float
+  paymentStatus    String
+  paymentMethod    String
+  paymentReference String
+  taxAmount        Float
+  duration         Int
+  subtotal         Float
+  issuedBy         String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  vehicleId String // 👈 New foreign key to Vehicle
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tickets")
+}
